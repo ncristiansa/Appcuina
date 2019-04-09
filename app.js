@@ -46,13 +46,14 @@ app.get("/", function(req, res){
 			</thead>\
 			<tbody>';
 			docs.forEach(function(doc){
+				console.log(doc.nombre);
 				var tr_Id = "<tr><td>"+doc._id+"</td>";
 				var tr_nombre = "<td>"+doc.nombre+"</td>"
-				var tr_plataforma = "<td>"+doc._plataforma+"</td>";
+				var tr_plataforma = "<td>"+doc.plataforma+"</td>";
 				var tr_tipo = "<td>"+doc.tipo+"</td>";
-				id_videjuego = doc._id;
-				botonEdit = "<td><a class='btn btn-link' href=http://localhost:3000/modificar/"+id_videojuego+">Editar</a></td>";
-				botonDel = "<td><a class='btn btn-link' href=http://localhost:3000/eliminar/"+id_videojuego+">Eliminar</a></td>";
+				id_videojuego = doc._id;
+				var botonEdit = "<td><a class='btn btn-link' href=http://localhost:3000/modificar/"+id_videojuego+">Editar</a></td>";
+				var botonDel = "<td><a class='btn btn-link' href=http://localhost:3000/eliminar/"+id_videojuego+">Eliminar</a></td>";
 				var tr_cierra = "</tr>";
 				var tabla= tr_Id+tr_nombre+tr_plataforma+tr_tipo+botonEdit+botonDel+tr_cierra;
 				listaJuegos=listaJuegos+tabla;
