@@ -16,7 +16,7 @@ MongoClient.connect(URL, function(err, db){
 	 * Mostraremos un mensaje por consola el cual comunicará que la conexión se ha establecido correctamente.
 	 */
 	console.log("Conectados correctamente.");
-	var dbo=db.db('videjuegos');
+	var dbo=db.db('videojuegos');
 	dbo.collection('videojuegos').find({}).toArray(function(err, docs){
 		docs.forEach(function(doc){
 			/**
@@ -104,9 +104,9 @@ app.post("/insertar", URLencodeParser, function(req, res){
 
 	MongoClient.connect(URL, function(err, db){
 		if(err) throw err;
-		var dbo = db.db("videjuegos");
+		var dbo = db.db("videojuegos");
 		var miobjecto = {nombre: inputNom, plataforma:inputPlat, tipo:inputTipo};
-		dbo.collection("videjuegos").insertOne(miobjecto, function (err, res){
+		dbo.collection("videojuegos").insertOne(miobjecto, function (err, res){
 			if(err) throw err;
 			console.log("Un nuevo juego ha sido insertado");
 			db.close();
@@ -121,7 +121,7 @@ app.get('/eliminar/:id',function(req,res){
 	if (err) throw err;
 	var dbo = db.db("videojuegos");
 	var consulta = { _id: idJuego };
-	dbo.collection("videjuegos").deleteOne({_id: new ObjectID(idJuego)});
+	dbo.collection("videojuegos").deleteOne({_id: new ObjectID(idJuego)});
 	console.log("El juego ha sido eliminado correctamente.");
 	res.redirect("/");
 	});
@@ -131,7 +131,7 @@ app.get('/modificar/:id',function(req,res){
 	 MongoClient.connect(URL, function(err, db) {
 			if (err) throw err;
 			var dbo = db.db("videojuegos");
-			dbo.collection('videjuegos').findOne({_id: new ObjectID(idJuego)},function(err, docs){
+			dbo.collection('videojuegos').findOne({_id: new ObjectID(idJuego)},function(err, docs){
 
 
 					 var modificar = '<form method="POST" action="http://localhost:3000/modificar/'+[idJuego]+'">\
@@ -170,7 +170,7 @@ app.post('/modificar/:id',URLencodeParser,function(req,res){
 					var dbo = db.db("videojuegos");
 			var jsquery = {_id: new ObjectID(idJuego)};
 					var newvalues = { $set: { nombre: inputNom, plataforma: inputPlat, tipo: inputTipo} };
-					dbo.collection('videjuegos').updateOne(jsquery, newvalues, function(err, result){
+					dbo.collection('videojuegos').updateOne(jsquery, newvalues, function(err, result){
 
 							console.log("El videojuego ha sido modificado");
 							res.redirect("/");
