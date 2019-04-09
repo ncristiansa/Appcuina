@@ -1,151 +1,186 @@
-var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://localhost:27017/";
-var $ = require('jquery');
-fs = require('fs');
-var bodyParser = require('body-parser');
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
-
-
 var express = require('express');
-	app = express();
+var app = express();
+var MongoClient = require('mongodb').MongoClient, assert = require('assert');
+var URL = 'mongodb://localhost:27017/';
+var fs = require('fs');
+var bodyParser = require('body-parser');
+var URLencodeParser = bodyParser.urlencoded({extended: false});
+var ObjectID = require('mongodb').ObjectID;
 
-	app.get ('/', function(req, res){
-		//var dbo = res.db("cocina");
-		//var consulta = dbo.getCollection('recetas').find({});
-		MongoClient.connect(url, function(err, db) {
-		  if (err) throw err;
-		  var dbo = db.db("videojuegos");
-
-		  dbo.collection("videojuegos").find({}).toArray(function(err, result) {
-			  var lista = "";
-		    if (err) throw err;
-				   boton_crear = "<a href=/crear>Añadir</a><br><br>";
-				   for (const key in result) {
-
-						li_nombre = "<li>"+result[key]["nombre"]+"</li>";
-
-						id_asociada = result[key]["_id"];
-						boton_editar = "<a href=/editar/"+id_asociada+">Editar</a>\t";
-						boton_borrar = "<a href=/borrar/"+id_asociada+">Borrar</a><br>";
-						lista_sin_sumar = li_nombre+boton_editar+boton_borrar;
-						lista = lista + lista_sin_sumar;
-				   }
-				   res.send(boton_crear+lista);
-					
-		    	/*
-		    result.forEach(function(receta){
-		    });
-		    */
-		    db.close();
-		  });
-		});	
+/**
+ * Conexión a MongoDB
+ */
+MongoClient.connect(URL, function(err, db){
+	assert.equal(null, err);
+	/**
+	 * Mostraremos un mensaje por consola el cual comunicará que la conexión se ha establecido correctamente.
+	 */
+	console.log("Conectados correctamente.");
+	var dbo=db.db('videjuegos');
+	dbo.collection('videojuegos').find({}).toArray(function(err, docs){
+		docs.forEach(function(doc){
+			/**
+			 * Mostraremos el campo tipo de nuestra tabla
+			 */
+			console.log(doc.tipo);
+		});
+		db.close();
 	});
-	var formulario = '<form method="POST" action="/crear">\
-						<label for="nombre">Nombre</label>\
-						<input type="text" name="nombre" id="edad">\
-						<br>\
-						<label for="duracion">Duracion</label>\
-						<input type="text" name="duracion">\
-						<br>\
-						<label for="descripcion">Descripcion</label>\
-						<input type="text" name="descripcion">\
-						<br>\
-						<label for="tipo">Tipo</label>\
-						<input type="text" name="tipo">\
-						<br>\
-						<input type="submit">\
+	console.log("Ejecutando funcion find");
+});
+app.get("/", function(req, res){
+	MongoClient.connect(URL, function(err, db){
+		assert.equal(null, err);
+		console.log("Conectados correctamente");
+		var dbo=db.db("videojuegos");
+		dbo.collection("videojuegos").find({}).toArray(function(err, docs){
+			var listaJuegos= "";
+			var tabla_abre = '<table class="table">\
+			<thead>\
+			<tr>\
+			<th scope="col">Id</th>\
+			<th scope="col">Nombre</th>\
+			<th scope="col">Plataforma</th>\
+			<th scope="col">Tipo</th>\
+			</tr>\
+			</thead>\
+			<tbody>';
+			docs.forEach(function(doc){
+				var tr_Id = "<tr><td>"+doc._id+"</td>";
+				var tr_nombre = "<td>"+doc.nombre+"</td>"
+				var tr_plataforma = "<td>"+doc._plataforma+"</td>";
+				var tr_tipo = "<td>"+doc.tipo+"</td>";
+				id_videjuego = doc._id;
+				botonEdit = "<td><a class='btn btn-link' href=http://localhost:3000/modificar/"+id_videojuego+">Editar</a></td>";
+				botonDel = "<td><a class='btn btn-link' href=http://localhost:3000/eliminar/"+id_videojuego+">Eliminar</a></td>";
+				var tr_cierra = "</tr>";
+				var tabla= tr_Id+tr_nombre+tr_plataforma+tr_tipo+botonEdit+botonDel+tr_cierra;
+				listaJuegos=listaJuegos+tabla;
+			});
+			var cierra_tabla = "</tbody>\
+			</table>";
+			var botonCrear = '<a class="btn btn-primary"  href="http://localhost:3000/insertar" >Crear</a>';
+			var tabla_final = tabla_abre+listaJuegos+cierra_tabla+botonCrear;
+			fs.readFile("cabecera.html", "utf8",(err, data)=>{
+				if(err){
+					console.log(err);
+					return err;
+				}else{
+					res.send(data+tabla_final);
+				}
+			});
+			db.close();
+		});
+
+	});
+});
+app.get("/insertar",function(req, res){
+	var formulario = '<form method="POST">\
+	<label for="nombre">Nombre del Juego</label>\
+	<input class="form-control" type="text" name="nombre">\
+	<br>\
+	<label for="duracion">Plataforma</label>\
+	<input class="form-control" type="text" name="plataforma">\
+	<br>\
+	<label for="descripcion">Tipo</label>\
+	<input class="form-control" type="text" name="tipo">\
+	<br>\
+	<input type="submit" value="Añadir">\
+	</form>';
+	fs.readFile("cabecera.html","utf8",(err,data)=>{
+		if(err){
+				console.log(err);
+				return err;
+		}else{
+				res.send(data+formulario);
+		}
+	});
+});
+app.post("/insertar", URLencodeParser, function(req, res){
+	var inputNom = req.body.nombre;
+	var inputPlat = req.body.plataforma;
+	var inputTipo = req.body.tipo;
+
+	MongoClient.connect(URL, function(err, db){
+		if(err) throw err;
+		var dbo = db.db("videjuegos");
+		var miobjecto = {nombre: inputNom, plataforma:inputPlat, tipo:inputTipo};
+		dbo.collection("videjuegos").insertOne(miobjecto, function (err, res){
+			if(err) throw err;
+			console.log("Un nuevo juego ha sido insertado");
+			db.close();
+		});
+		res.redirect("/");
+	});
+});
+app.get('/eliminar/:id',function(req,res){
+	var idJuego = req.params.id;
+
+	MongoClient.connect(URL, function(err, db) {
+	if (err) throw err;
+	var dbo = db.db("videojuegos");
+	var consulta = { _id: idJuego };
+	dbo.collection("videjuegos").deleteOne({_id: new ObjectID(idJuego)});
+	console.log("El juego ha sido eliminado correctamente.");
+	res.redirect("/");
+	});
+});
+app.get('/modificar/:id',function(req,res){
+	var idJuego = req.params.id;
+	 MongoClient.connect(URL, function(err, db) {
+			if (err) throw err;
+			var dbo = db.db("videojuegos");
+			dbo.collection('videjuegos').findOne({_id: new ObjectID(idJuego)},function(err, docs){
+
+
+					 var modificar = '<form method="POST" action="http://localhost:3000/modificar/'+[idJuego]+'">\
+					<label for="nombre">Nombre del Juego</label>\
+					<input class="form-control" type="text" name="nombre" value="'+docs["nombre"]+'">\
+					<br>\
+					<label for="duracion">Plataforma</label>\
+					<input class="form-control" type="text" name="plataforma" value="'+docs["plataforma"]+'">\
+					<br>\
+					<label for="descripcion">Tipo</label>\
+					<input class="form-control" type="text" name="tipo" value="'+docs["tipo"]+'">\
+					<br>\
+					<input type="submit">\
 					</form>';
 
-	app.get ('/crear', function(req, res){
-		//var dbo = res.db("cocina");
-		//var consulta = dbo.getCollection('recetas').find({});
-		/*
-		MongoClient.connect(url, function(err, db) {
-		  if (err) throw err;
-		  var dbo = db.db("cocina");
-			*/
-		  res.send('<html><body>'
-			  +formulario
-			  + '</body></html>');
-/*
-		});	
-*/
+					 fs.readFile("cabecera.html","utf8",(err,data)=>{
+							if(err){
+									console.log(err);
+									return err;
+							}else{
+									res.send(data+modificar);
+							}
+					});
+			});
 	});
+});
+app.post('/modificar/:id',URLencodeParser,function(req,res){
+	var idJuego = req.params.id;
 
-	app.post ('/crear', function(req, res){
-		//var dbo = res.db("cocina");
-		//var consulta = dbo.getCollection('recetas').find({});
+	var inputNom = req.body.nombre;
+	var inputPlat = req.body.plataforma;
+	var inputTipo = req.body.tipo;
 
-		var nombre = req;
-		console.log(nombre);
-		//var duracion = req.body.duracion || '';
-		//var descripcion = req.body.descripcion || '';
-		//var tipo = req.body.tipo || '';
+	MongoClient.connect(URL, function(err, db) {
+			if (err) throw err;
+					var dbo = db.db("videojuegos");
+			var jsquery = {_id: new ObjectID(idJuego)};
+					var newvalues = { $set: { nombre: inputNom, plataforma: inputPlat, tipo: inputTipo} };
+					dbo.collection('videjuegos').updateOne(jsquery, newvalues, function(err, result){
+
+							console.log("El videojuego ha sido modificado");
+							res.redirect("/");
 	
-		res.send('<html><body>'
-			+ req
-			+ formulario
-			+ '</html></body>'
-		);
-		/*
-		MongoClient.connect(url, function(err, db) {
-		  if (err) throw err;
-		  var dbo = db.db("cocina");
-			
-			
-		  res.send(formulario);
-		});	
-		*/
-	});
-
-	var formulario = '<form method="post" action="/nacimiento">'
-    + '<label for="edad">¿Qué edad tienes?</label>'
-    + '<input type="text" name="edad" id="edad">'    
-    + '<input type="submit" value="Enviar"/>'
-    + '</form>';
- 
-var cabecera = '<h1>Naciste el año</h1>';
- 
-app.get('/nacimiento', function (req, res) {
- 
-    res.send('<html><body>'
-            + cabecera
-            + formulario
-            + '</html></body>'
-    );
- 
+					});
+			});
 });
-
-app.post('/nacimiento',urlencodedParser, function (req, res) {
- 
-    var edad = req.body.edad || '';
-    var nacimiento = '';
- 
-    if (edad != '')
-        nacimiento = 2015 - edad;
- 
-    res.send('<html><body>'
-            + cabecera
-            + '<p>' + nacimiento + '</p>'
-            + formulario
-            + '</html></body>'
-    );
- 
+app.use(function(req, res){
+	res.sendStatus(404);
 });
-
-
-
-
-	app.use(function(req, res){
-
-		res.sendStatus(404);
-	});
-
-	var server = app.listen(3000, function(){
-		var port = server.address().port;
-		console.log('Express server listening on port %s', port);
-	});
-
-function generarDatos(){
-$("body").append("p");
-}
+var server = app.listen(3000, function(){
+	var port = server.address().port;
+	console.log("Express server listening on port %s", port);
+});
