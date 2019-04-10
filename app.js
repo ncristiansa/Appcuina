@@ -35,8 +35,10 @@ app.get("/", function(req, res){
 		var dbo=db.db("videojuegos");
 		dbo.collection("videojuegos").find({}).toArray(function(err, docs){
 			var listaJuegos= "";
+			var inputBusqueda = '<input id="busqueda" type="text" name="busqueda">\
+			<input class="btn btn-primary" type="submit" name="buscar" value="buscar">';
 			var tabla_abre = '<table class="table">\
-			<thead>\
+			<thead class="thead-dark">\
 			<tr>\
 			<th scope="col">Id</th>\
 			<th scope="col">Nombre</th>\
@@ -61,7 +63,7 @@ app.get("/", function(req, res){
 			var cierra_tabla = "</tbody>\
 			</table>";
 			var botonCrear = '<a class="btn btn-primary"  href="http://localhost:3000/insertar" >Crear</a>';
-			var tabla_final = tabla_abre+listaJuegos+cierra_tabla+botonCrear;
+			var tabla_final = inputBusqueda+tabla_abre+listaJuegos+cierra_tabla+botonCrear;
 			fs.readFile("cabecera.html", "utf8",(err, data)=>{
 				if(err){
 					console.log(err);
