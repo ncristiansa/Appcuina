@@ -36,7 +36,8 @@ app.get("/", function(req, res){
 		dbo.collection("videojuegos").find({}).toArray(function(err, docs){
 			var listaJuegos= "";
 			var inputBusqueda = '<input id="busqueda" type="text" name="busqueda">\
-			<input class="btn btn-primary" type="submit" name="buscar" value="buscar">';
+			<input class="btn btn-primary" name="buscar" value="buscar">';
+			
 			var tabla_abre = '<table class="table">\
 			<thead class="thead-dark">\
 			<tr>\
@@ -48,12 +49,12 @@ app.get("/", function(req, res){
 			</thead>\
 			<tbody>';
 			docs.forEach(function(doc){
-				console.log(doc.nombre);
+				console.log("NOMBRE JUEGO"+doc.nombre);
 				var tr_Id = "<tr><td>"+doc._id+"</td>";
 				var tr_nombre = "<td>"+doc.nombre+"</td>"
 				var tr_plataforma = "<td>"+doc.plataforma+"</td>";
 				var tr_tipo = "<td>"+doc.tipo+"</td>";
-				id_videojuego = doc._id;
+				var id_videojuego = doc._id;
 				var botonEdit = "<td><a class='btn btn-link' href=http://localhost:3000/modificar/"+id_videojuego+">Editar</a></td>";
 				var botonDel = "<td><a class='btn btn-link' href=http://localhost:3000/eliminar/"+id_videojuego+">Eliminar</a></td>";
 				var tr_cierra = "</tr>";
@@ -77,17 +78,18 @@ app.get("/", function(req, res){
 
 	});
 });
+//Genera el formulario para insertar
 app.get("/insertar",function(req, res){
 	var formulario = '<form method="POST">\
-	<label for="nombre">Nombre del Juego</label>\
+	<div class="form-group"><label for="nombre">Nombre del Juego</label>\
 	<input class="form-control" type="text" name="nombre">\
-	<br>\
-	<label for="duracion">Plataforma</label>\
+	<br></div>\
+	<div class="form-group"><label for="duracion">Plataforma</label>\
 	<input class="form-control" type="text" name="plataforma">\
-	<br>\
-	<label for="descripcion">Tipo</label>\
+	<br></div>\
+	<div class="form-group"><label for="descripcion">Tipo</label>\
 	<input class="form-control" type="text" name="tipo">\
-	<br>\
+	<br></div>\
 	<input type="submit" value="Añadir">\
 	</form>';
 	fs.readFile("cabecera.html","utf8",(err,data)=>{
@@ -99,6 +101,8 @@ app.get("/insertar",function(req, res){
 		}
 	});
 });
+
+//Obtiene los datos de los inputs y añade un nuevo elemento a nuestra db
 app.post("/insertar", URLencodeParser, function(req, res){
 	var inputNom = req.body.nombre;
 	var inputPlat = req.body.plataforma;
@@ -134,19 +138,17 @@ app.get('/modificar/:id',function(req,res){
 			if (err) throw err;
 			var dbo = db.db("videojuegos");
 			dbo.collection('videojuegos').findOne({_id: new ObjectID(idJuego)},function(err, docs){
-
-
 					 var modificar = '<form method="POST" action="http://localhost:3000/modificar/'+[idJuego]+'">\
-					<label for="nombre">Nombre del Juego</label>\
+					 <div class="form-group"><label for="nombre">Nombre del Juego</label>\
 					<input class="form-control" type="text" name="nombre" value="'+docs["nombre"]+'">\
-					<br>\
-					<label for="duracion">Plataforma</label>\
+					<br></div>\
+					<div class="form-group"><label for="duracion">Plataforma</label>\
 					<input class="form-control" type="text" name="plataforma" value="'+docs["plataforma"]+'">\
-					<br>\
-					<label for="descripcion">Tipo</label>\
+					<br></div>\
+					<div class="form-group"><label for="descripcion">Tipo</label>\
 					<input class="form-control" type="text" name="tipo" value="'+docs["tipo"]+'">\
-					<br>\
-					<input type="submit">\
+					<br></div>\
+					<input type="submit" value="Guardar">\
 					</form>';
 
 					 fs.readFile("cabecera.html","utf8",(err,data)=>{
