@@ -22,11 +22,10 @@ MongoClient.connect(URL, function(err, db){
 			/**
 			 * Mostraremos el campo tipo de nuestra tabla
 			 */
-			console.log(doc.tipo);
+			//console.log(doc.tipo);
 		});
 		db.close();
 	});
-	console.log("Ejecutando funcion find");
 });
 app.get("/", function(req, res){
 	MongoClient.connect(URL, function(err, db){
@@ -35,13 +34,15 @@ app.get("/", function(req, res){
 		var dbo=db.db("videojuegos");
 		dbo.collection("videojuegos").find({}).toArray(function(err, docs){
 			var listaJuegos= "";
+			/**
+			 * Boton de busqueda no funciona (Filtrado)
+			 */
 			var inputBusqueda = '<input id="busqueda" type="text" name="busqueda">\
-			<input class="btn btn-primary" name="buscar" value="buscar">';
+			<button class="btn btn-primary" name="buscar">Buscar</button>';
 			
 			var tabla_abre = '<table class="table">\
 			<thead class="thead-dark">\
 			<tr>\
-			<th scope="col">Id</th>\
 			<th scope="col">Nombre</th>\
 			<th scope="col">Plataforma</th>\
 			<th scope="col">Tipo</th>\
@@ -49,8 +50,7 @@ app.get("/", function(req, res){
 			</thead>\
 			<tbody>';
 			docs.forEach(function(doc){
-				console.log("NOMBRE JUEGO"+doc.nombre);
-				var tr_Id = "<tr><td>"+doc._id+"</td>";
+				
 				var tr_nombre = "<td>"+doc.nombre+"</td>"
 				var tr_plataforma = "<td>"+doc.plataforma+"</td>";
 				var tr_tipo = "<td>"+doc.tipo+"</td>";
@@ -58,7 +58,7 @@ app.get("/", function(req, res){
 				var botonEdit = "<td><a class='btn btn-link' href=http://localhost:3000/modificar/"+id_videojuego+">Editar</a></td>";
 				var botonDel = "<td><a class='btn btn-link' href=http://localhost:3000/eliminar/"+id_videojuego+">Eliminar</a></td>";
 				var tr_cierra = "</tr>";
-				var tabla= tr_Id+tr_nombre+tr_plataforma+tr_tipo+botonEdit+botonDel+tr_cierra;
+				var tabla= tr_nombre+tr_plataforma+tr_tipo+botonEdit+botonDel+tr_cierra;
 				listaJuegos=listaJuegos+tabla;
 			});
 			var cierra_tabla = "</tbody>\
